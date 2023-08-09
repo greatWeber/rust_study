@@ -1,4 +1,4 @@
-use std::{error::Error, fs, path::Path};
+use std::{error::Error, fs::{self, read_dir}, path::Path};
 use reqwest::Url;
 use tokio::{fs::File as AsyncFile, io::AsyncWriteExt};
 
@@ -30,4 +30,35 @@ pub async fn download_img(url: &str) -> Result<(), Box<dyn Error>> {
   
   
   Ok(())
+}
+/**
+ * 查找目录下的所有图片
+ */
+pub fn find_img(path : &str)-> Result<Vec<String>,Box<dyn Error>> {
+  // 定义要搜索的目录
+  let dir = Path::new(path);
+
+  // 获取目录下的所有文件
+  let files = read_dir(dir).unwrap();
+
+  let images: Vec<_> = files.filter_map(|file| file.ok())
+  .filter(|file| {
+    if let Some(ext) = file.path().extension() {
+      ext == "jpg" || ext == "png" || ext == "jpeg"
+    }else {
+      false
+    }
+  }).collect();
+
+  let mut result = Vec::new();
+
+  // 打印所有的图片路径
+  for img in images {
+    let img_path =img.path().display().to_string();
+    // println!("img path: {}",img_path);
+    
+    result.push(img_path);
+  }
+
+  Ok(result)
 }
